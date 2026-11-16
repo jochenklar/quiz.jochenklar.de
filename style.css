@@ -19,6 +19,7 @@
   --pop: 5px 5px 0 var(--ink);
   --radius: 10px;
   --gap: clamp(0.6rem, 2vh, 1rem);
+  --bubble-height: 7.6rem;
 }
 
 * { box-sizing: border-box; }
@@ -49,7 +50,9 @@ button {
 /*
  * App layout: the game fills the screen and every row has a fixed size, so
  * nothing moves between rounds. Only the comic panel is flexible and the moon
- * drawing scales to fit the space that is left.
+ * drawing scales to fit the space that is left. The speech bubble is only as
+ * large as its text and sits at the top of its row, the rest of the row is
+ * left empty above the buttons.
  */
 .game {
   height: 100vh;
@@ -60,7 +63,7 @@ button {
   max-width: 34rem;
   margin: 0 auto;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  grid-template-rows: auto minmax(0, 1fr) var(--bubble-height) auto;
   gap: var(--gap);
   padding:
     calc(env(safe-area-inset-top, 0px) + 0.8rem)
@@ -246,11 +249,16 @@ button {
   from { transform: scale(0) rotate(-40deg); }
 }
 
-/* --- speech bubble (fixed height, always visible) --- */
+/* --- speech bubble (sized to its text, at the top of a fixed row) --- */
 
 .bubble {
   position: relative;
-  height: 7.6rem;
+  justify-self: start;
+  align-self: start;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
   padding: 0.6rem 0.9rem;
   background: var(--paper);
   border: var(--border);
@@ -260,9 +268,9 @@ button {
 
 .bubble.show { animation: pop 0.25s ease-out; }
 
-/* scrolls only if a text is ever too long for the fixed bubble height */
+/* scrolls only if a text is ever too long for the bubble row */
 .bubble-body {
-  height: 100%;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -375,58 +383,65 @@ kbd {
   opacity: 0.55;
 }
 
-/* --- next button --- */
+/* --- countdown to the next moon (bottom right of the panel) --- */
 
-.controls {
-  display: flex;
-  justify-content: center;
-}
-
-.next {
-  position: relative;
-  overflow: hidden;
-  height: 2.9rem;
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  letter-spacing: 0.06em;
-  color: var(--ink);
+.timer {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
   background: var(--paper);
   border: var(--border);
-  border-radius: 999px;
-  box-shadow: var(--pop);
-  padding: 0.2rem 1.4rem 0;
-  cursor: pointer;
-  transition: opacity 0.15s, filter 0.15s;
-}
-
-/* dimmed until the moon has been answered */
-.next:disabled {
-  cursor: default;
-  opacity: 0.45;
-  filter: grayscale(1);
+  border-radius: 50%;
   box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  z-index: 2;
 }
 
-.next:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
-.next:focus-visible { outline: 3px dashed #fff; outline-offset: 4px; }
+.timer[hidden] { display: none; }
 
-/* countdown bar until the next moon appears automatically */
-.next::after {
-  content: "";
+.timer svg {
   position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 5px;
+  inset: 0;
   width: 100%;
-  background: var(--best);
-  transform-origin: left;
+  height: 100%;
+  transform: rotate(-90deg);
 }
 
-.next.run::after { animation: drain var(--delay, 3s) linear forwards; }
+.timer circle {
+  fill: none;
+  stroke-width: 5;
+}
+
+.timer-track { stroke: rgba(26, 16, 32, 0.12); }
+
+.timer-ring {
+  stroke: var(--best);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+
+.timer.run .timer-ring { animation: drain var(--delay, 3s) linear forwards; }
 
 @keyframes drain {
-  to { transform: scaleX(0); }
+  to { stroke-dashoffset: 100; }
 }
+
+.timer-count {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1;
+  padding-top: 0.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.timer:focus-visible { outline: 3px dashed #fff; outline-offset: 4px; }
 
 /* touch devices: no keyboard hints */
 @media (hover: none) {
@@ -434,10 +449,10 @@ kbd {
 }
 
 @media (max-width: 420px) {
+  :root { --bubble-height: 8.4rem; }
   .planet { font-size: 1.4rem; }
   .burst { width: 6rem; }
   .burst-shape span { font-size: 1.35rem; }
-  .bubble { height: 8.4rem; }
   .fact { font-size: 0.95rem; }
   .meta { font-size: 0.8rem; }
 }

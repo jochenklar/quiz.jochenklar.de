@@ -23,7 +23,8 @@
     meta: document.getElementById("meta"),
     answers: document.getElementById("answers"),
     buttons: [...document.querySelectorAll("#answers button")],
-    next: document.getElementById("next"),
+    timer: document.getElementById("timer"),
+    timerCount: document.getElementById("timer-count"),
   };
 
   // --- storage (may be unavailable, e.g. in private mode) ---
@@ -93,6 +94,7 @@
   let best = Math.max(load(STORAGE_BEST), streak);
   let answered = false;
   let timer = null;
+  let ticker = null;
 
   function render(bumpEl) {
     el.streak.textContent = streak;
@@ -102,7 +104,8 @@
 
   function newRound() {
     clearTimeout(timer);
-    timer = null;
+    clearInterval(ticker);
+    timer = ticker = null;
     answered = false;
     current = nextMoon();
 
@@ -114,8 +117,8 @@
     el.bubble.classList.remove("show");
     el.fact.textContent = "Which planet does this moon orbit?";
     el.meta.textContent = "Pick one below to keep your streak going!";
-    el.next.disabled = true;
-    el.next.classList.remove("run");
+    el.timer.hidden = true;
+    el.timer.classList.remove("run");
     el.answers.classList.remove("answered");
     for (const b of el.buttons) {
       b.disabled = false;
@@ -160,11 +163,17 @@
     el.meta.textContent = metaFor(current);
     el.bubble.classList.add("show");
 
-    // next button with countdown bar
+    // countdown to the next moon in the corner of the panel
     const delay = correct ? DELAY_CORRECT : DELAY_WRONG;
-    el.next.style.setProperty("--delay", `${delay}ms`);
-    el.next.disabled = false;
-    restartAnimation(el.next, "run");
+    const end = Date.now() + delay;
+    const tick = () => {
+      el.timerCount.textContent = Math.max(1, Math.ceil((end - Date.now()) / 1000));
+    };
+    tick();
+    el.timer.style.setProperty("--delay", `${delay}ms`);
+    el.timer.hidden = false;
+    restartAnimation(el.timer, "run");
+    ticker = setInterval(tick, 200);
     timer = setTimeout(newRound, delay);
   }
 
@@ -173,7 +182,7 @@
     b.addEventListener("click", () => answer(b.dataset.planet));
   }
 
-  el.next.addEventListener("click", newRound);
+  el.timer.addEventListener("click", newRound);
 
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;

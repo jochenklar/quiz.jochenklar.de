@@ -34,6 +34,13 @@
       <p class="caption">Guess the planet!</p>
       <div class="art" id="art"></div>
       <h2 class="moon" id="moon">…</h2>
+      <button type="button" class="timer" id="timer" hidden aria-label="Next moon">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle class="timer-track" cx="20" cy="20" r="16" />
+          <circle class="timer-ring" cx="20" cy="20" r="16" pathLength="100" />
+        </svg>
+        <span class="timer-count" id="timer-count"></span>
+      </button>
       <div class="burst" id="burst" hidden>
         <div class="burst-shape"><span id="burst-text"></span></div>
       </div>
@@ -51,10 +58,6 @@
       <button type="button" class="planet saturn" data-planet="Saturn"><kbd>2</kbd>Saturn</button>
       <button type="button" class="planet uranus" data-planet="Uranus"><kbd>3</kbd>Uranus</button>
       <button type="button" class="planet neptune" data-planet="Neptune"><kbd>4</kbd>Neptune</button>
-    </div>
-
-    <div class="controls">
-      <button type="button" class="next" id="next" disabled>Next moon ▸</button>
     </div>
 
   </main>

@@ -47,8 +47,8 @@ Usage
 -----
 
 Click the planet you think the moon belongs to. The next round starts
-automatically after a few seconds (the bar in the *Next moon* button shows the
-countdown), or click *Next moon* to continue right away.
+automatically after a few seconds (the countdown is shown in the bottom right
+corner of the moon panel), or click the countdown to continue right away.
 
 | Key             | Action                       |
 | --------------- | ---------------------------- |
