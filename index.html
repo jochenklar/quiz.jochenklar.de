@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moon Quiz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <header class="scores">
+      <div class="score">
+        <span class="label">Streak</span>
+        <span class="value" id="streak">0</span>
+      </div>
+      <div class="score">
+        <span class="label">Best</span>
+        <span class="value" id="best">0</span>
+      </div>
+    </header>
+
+    <section class="question">
+      <p class="prompt">Which planet does this moon orbit?</p>
+      <h1 id="moon" class="moon">…</h1>
+      <p id="fact" class="fact" aria-live="polite">&nbsp;</p>
+    </section>
+
+    <div class="answers" id="answers">
+      <button type="button" data-planet="Jupiter"><kbd>1</kbd> Jupiter</button>
+      <button type="button" data-planet="Saturn"><kbd>2</kbd> Saturn</button>
+      <button type="button" data-planet="Uranus"><kbd>3</kbd> Uranus</button>
+      <button type="button" data-planet="Neptune"><kbd>4</kbd> Neptune</button>
+    </div>
+
+    <footer class="hint">Press 1–4 to answer · Press Enter or Space to skip ahead</footer>
+  </main>
+
+  <script src="moons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
