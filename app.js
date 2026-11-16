@@ -1,20 +1,29 @@
 (() => {
   const STORAGE_STREAK = "moonQuiz.streak";
   const STORAGE_BEST = "moonQuiz.best";
-  const DELAY_CORRECT = 1200;
-  const DELAY_WRONG = 2500;
+  const DELAY_CORRECT = 3000;
+  const DELAY_WRONG = 5000;
+  const WORDS_CORRECT = ["POW!", "BAM!", "ZAP!", "KAPOW!", "BOOM!", "WHAM!"];
+  const WORDS_WRONG = ["OOPS!", "WHOOPS!", "NOPE!", "ARGH!", "UH-OH!"];
 
-  // Flatten { planet: [[name, km], ...] } into [{ name, planet, km, rank }]
+  // Flatten { planet: [moon, ...] } into [{ ...moon, planet, rank }]
   const allMoons = Object.entries(MOONS).flatMap(([planet, moons]) =>
-    moons.map(([name, km], i) => ({ name, planet, km, rank: i + 1 }))
+    moons.map((moon, i) => ({ ...moon, planet, rank: i + 1 }))
   );
 
   const el = {
     streak: document.getElementById("streak"),
     best: document.getElementById("best"),
+    art: document.getElementById("art"),
     moon: document.getElementById("moon"),
+    burst: document.getElementById("burst"),
+    burstText: document.getElementById("burst-text"),
+    bubble: document.getElementById("bubble"),
     fact: document.getElementById("fact"),
+    meta: document.getElementById("meta"),
+    answers: document.getElementById("answers"),
     buttons: [...document.querySelectorAll("#answers button")],
+    next: document.getElementById("next"),
   };
 
   // --- storage (may be unavailable, e.g. in private mode) ---
@@ -58,6 +67,27 @@
     return deck.pop();
   }
 
+  // --- helpers ---
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function restartAnimation(node, cls) {
+    node.classList.remove(cls);
+    void node.offsetWidth;
+    node.classList.add(cls);
+  }
+
+  function ordinal(n) {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function metaFor(moon) {
+    const size = moon.km.toLocaleString("en-US");
+    const rank = moon.rank === 1 ? "Largest" : `${ordinal(moon.rank)} largest`;
+    return `${rank} moon of ${moon.planet} · ${size} km across · found in ${moon.year} by ${moon.by}`;
+  }
+
   // --- state ---
   let streak = load(STORAGE_STREAK);
   let best = Math.max(load(STORAGE_BEST), streak);
@@ -67,23 +97,7 @@
   function render(bumpEl) {
     el.streak.textContent = streak;
     el.best.textContent = best;
-    if (bumpEl) {
-      bumpEl.classList.remove("bump");
-      void bumpEl.offsetWidth; // restart animation
-      bumpEl.classList.add("bump");
-    }
-  }
-
-  function ordinal(n) {
-    const s = ["th", "st", "nd", "rd"];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  }
-
-  function factFor(moon) {
-    const size = moon.km.toLocaleString("en-US");
-    const rank = moon.rank === 1 ? "the largest" : `the ${ordinal(moon.rank)} largest`;
-    return `${moon.name} is ${rank} moon of ${moon.planet} (${size} km across).`;
+    if (bumpEl) restartAnimation(bumpEl, "bump");
   }
 
   function newRound() {
@@ -91,9 +105,18 @@
     timer = null;
     answered = false;
     current = nextMoon();
+
+    el.art.innerHTML = MoonArt.svg(current);
+    restartAnimation(el.art, "enter");
     el.moon.textContent = current.name;
-    el.fact.textContent = " ";
-    el.fact.className = "fact";
+
+    el.burst.hidden = true;
+    el.bubble.classList.remove("show");
+    el.fact.textContent = "Which planet does this moon orbit?";
+    el.meta.textContent = "Pick one below to keep your streak going!";
+    el.next.disabled = true;
+    el.next.classList.remove("run");
+    el.answers.classList.remove("answered");
     for (const b of el.buttons) {
       b.disabled = false;
       b.classList.remove("correct", "wrong");
@@ -105,6 +128,7 @@
     answered = true;
 
     const correct = planet === current.planet;
+    el.answers.classList.add("answered");
     for (const b of el.buttons) {
       b.disabled = true;
       if (b.dataset.planet === current.planet) b.classList.add("correct");
@@ -123,10 +147,25 @@
     save(STORAGE_STREAK, streak);
     save(STORAGE_BEST, best);
 
-    el.fact.textContent = (correct ? "✓ " : "✗ ") + factFor(current);
-    el.fact.className = "fact " + (correct ? "correct" : "wrong");
+    // POW! burst
+    el.burstText.textContent = pick(correct ? WORDS_CORRECT : WORDS_WRONG);
+    el.burst.classList.toggle("wrong", !correct);
+    el.burst.hidden = false;
 
-    timer = setTimeout(newRound, correct ? DELAY_CORRECT : DELAY_WRONG);
+    // speech bubble with the fact
+    const verdict = document.createElement("span");
+    verdict.className = "verdict " + (correct ? "correct" : "wrong");
+    verdict.textContent = correct ? "Correct!" : `It's ${current.planet}!`;
+    el.fact.replaceChildren(verdict, document.createTextNode(current.fact));
+    el.meta.textContent = metaFor(current);
+    el.bubble.classList.add("show");
+
+    // next button with countdown bar
+    const delay = correct ? DELAY_CORRECT : DELAY_WRONG;
+    el.next.style.setProperty("--delay", `${delay}ms`);
+    el.next.disabled = false;
+    restartAnimation(el.next, "run");
+    timer = setTimeout(newRound, delay);
   }
 
   // --- input ---
@@ -134,8 +173,10 @@
     b.addEventListener("click", () => answer(b.dataset.planet));
   }
 
+  el.next.addEventListener("click", newRound);
+
   document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
     const i = ["1", "2", "3", "4"].indexOf(e.key);
     if (i !== -1) {
       e.preventDefault();

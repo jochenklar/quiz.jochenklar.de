@@ -2,40 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#241a5c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Moon Quiz">
   <title>Moon Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="game">
-    <header class="scores">
-      <div class="score">
-        <span class="label">Streak</span>
-        <span class="value" id="streak">0</span>
-      </div>
-      <div class="score">
-        <span class="label">Best</span>
-        <span class="value" id="best">0</span>
+    <header class="top">
+      <h1 class="title">Moon Quiz!</h1>
+      <div class="scores">
+        <div class="score">
+          <span class="label">Streak</span>
+          <span class="value" id="streak">0</span>
+        </div>
+        <div class="score best">
+          <span class="label">Best</span>
+          <span class="value" id="best">0</span>
+        </div>
       </div>
     </header>
 
-    <section class="question">
-      <p class="prompt">Which planet does this moon orbit?</p>
-      <h1 id="moon" class="moon">…</h1>
-      <p id="fact" class="fact" aria-live="polite">&nbsp;</p>
+    <section class="panel">
+      <p class="caption">Guess the planet!</p>
+      <div class="art" id="art"></div>
+      <h2 class="moon" id="moon">…</h2>
+      <div class="burst" id="burst" hidden>
+        <div class="burst-shape"><span id="burst-text"></span></div>
+      </div>
     </section>
 
-    <div class="answers" id="answers">
-      <button type="button" data-planet="Jupiter"><kbd>1</kbd> Jupiter</button>
-      <button type="button" data-planet="Saturn"><kbd>2</kbd> Saturn</button>
-      <button type="button" data-planet="Uranus"><kbd>3</kbd> Uranus</button>
-      <button type="button" data-planet="Neptune"><kbd>4</kbd> Neptune</button>
+    <div class="bubble" id="bubble" aria-live="polite">
+      <div class="bubble-body">
+        <p class="fact" id="fact"></p>
+        <p class="meta" id="meta"></p>
+      </div>
     </div>
 
-    <footer class="hint">Press 1–4 to answer · Press Enter or Space to skip ahead</footer>
+    <div class="answers" id="answers">
+      <button type="button" class="planet jupiter" data-planet="Jupiter"><kbd>1</kbd>Jupiter</button>
+      <button type="button" class="planet saturn" data-planet="Saturn"><kbd>2</kbd>Saturn</button>
+      <button type="button" class="planet uranus" data-planet="Uranus"><kbd>3</kbd>Uranus</button>
+      <button type="button" class="planet neptune" data-planet="Neptune"><kbd>4</kbd>Neptune</button>
+    </div>
+
+    <div class="controls">
+      <button type="button" class="next" id="next" disabled>Next moon ▸</button>
+    </div>
+
   </main>
 
   <script src="moons.js"></script>
+  <script src="art.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
